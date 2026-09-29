@@ -1,35 +1,95 @@
-import java.util.Scanner;
-public class Main {
-    public static double add (double a, double b) { return a + b; }
-    public static double subtract(double a, double b) { return a - b; }
-    public static double multiply(double a, double b) { return a * b; }
-    public static double divide(double a, double b) {
-        if (b == 0) {
-            System.out.println("Error: Division by zero");
-            return 0;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class Main extends JFrame implements ActionListener {
+    private JTextField display;
+    private double num1 = 0, num2 = 0, result = 0;
+    private char operator = '\0';
+
+    public Main() {
+        setTitle("Simple Calculator");
+        setSize(350, 450);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
+
+        display = new JTextField();
+        display.setFont(new Font("Arial", Font.BOLD, 24));
+        display.setEditable(false);
+        display.setHorizontalAlignment(SwingConstants.RIGHT);
+        add(display, BorderLayout.NORTH);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(4, 4, 10, 10));
+
+        String[] buttons = {
+                "7", "8", "9", "/",
+                "4", "5", "6", "*",
+                "1", "2", "3", "-",
+                "0", "C", "=", "+"
+        };
+
+        for (String text : buttons) {
+            JButton button = new JButton(text);
+            button.setFont(new Font("Arial", Font.BOLD, 18));
+            button.addActionListener(this);
+            panel.add(button);
         }
-        return a / b;
+
+        add(panel, BorderLayout.CENTER);
+        setLocationRelativeTo(null);
+        setVisible(true);
     }
-public static void main (String[] args) {
-    Scanner scanner = new Scanner(System.in);
-    System.out.println("--- Simple Calculate v1.0---");
-    System.out.println("1.Add\n2.Subtract\n3.Multiply\n4.Divide");
 
-    System.out.println("Enter choice (1-4): ");
-    int choice = scanner.nextInt();
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        String command = e.getActionCommand();
 
-    System.out.print("Enter first number: ");
-    double num1 = scanner.nextDouble();
-
-    System.out.print("Enter second number: ");
-    double num2 = scanner.nextDouble();
-
-    switch (choice) {
-        case 1 -> System.out.println("Result: " + add(num1, num2));
-        case 2 -> System.out.println("Result: " + subtract(num1, num2));
-        case 3 -> System.out.println("Result: " + multiply(num1, num2));
-        case 4 -> System.out.println("Result: " + divide(num1, num2));
-        default -> System.out.println("Invalid Choice");
+        if (command.charAt(0) >= '0' && command.charAt(0) <= '9') {
+            display.setText(display.getText() + command);
+        } else if (command.equals("C")) {
+            display.setText("");
+            num1 = num2 = result = 0;
+            operator = '\0';
+        } else if (command.equals("=")) {
+            if (!display.getText().isEmpty() && operator != '\0') {
+                try {
+                    num2 = Double.parseDouble(display.getText());
+                    switch (operator) {
+                        case '+': result = num1 + num2; break;
+                        case '-': result = num1 - num2; break;
+                        case '*': result = num1 * num2; break;
+                        case '/':
+                            if (num2 != 0) {
+                                result = num1 / num2;
+                            } else {
+                                display.setText("Error");
+                                return;
+                            }
+                            break;
+                    }
+                    display.setText(String.valueOf(result));
+                    num1 = result;
+                    operator = '\0';
+                } catch (NumberFormatException ex) {
+                    display.setText("Error");
+                }
+            }
+        } else {
+            if (!display.getText().isEmpty()) {
+                try {
+                    num1 = Double.parseDouble(display.getText());
+                    operator = command.charAt(0);
+                    display.setText("");
+                } catch (NumberFormatException ex) {
+                    display.setText("Error");
+                }
+            }
+        }
     }
-}
+
+    public static void main(String[] args) {
+        new Main();
+    }
 }
